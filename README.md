@@ -3,9 +3,7 @@
 Read Betaflight sensor data over MSP from a flight controller such as a
 Lumenier Lux H7.
 
-## If you are new to drone hardware
-
-You can read this repo as a software project first.
+## Code Structure
 
 Start in this order:
 
@@ -15,19 +13,13 @@ Start in this order:
 4. `sensor_io/parsers.py`
 5. `sensor_io/msp.py`
 
-That order lets you understand the high-level program flow before looking at
-the lower-level protocol details.
 
-The main mental model is simple:
-
-- your computer sends a small request over a serial connection
+- Computer running script sends a small request over a serial connection
 - the flight controller sends back a packet (small structured message)
 - this code turns that packet into named Python fields
-- the script prints those fields as text or JSON
+- the script prints those fields as text or JSON (or later sends to sim)
 
-## Project goal
-
-This repo is organized so the code is easy to read in layers:
+## Sensor_IO Package Sections
 
 - `sensor_reader.py`: command-line entry point
 - `sensor_io/msp.py`: MSP serial framing and checksum handling
@@ -36,10 +28,8 @@ This repo is organized so the code is easy to read in layers:
 - `sensor_io/output.py`: text and JSON formatting
 - `sensor_io/models.py`: dataclasses that describe the sensor data shape
 
-The intent is that a teammate can start at the CLI file for the big picture,
-then open the lower-level modules only when they need protocol details.
 
-## Plain-English glossary
+## Glossary
 
 - Flight controller: the small onboard computer that runs the drone.
 - Betaflight: the firmware (low-level software on the flight controller) used
@@ -75,29 +65,16 @@ then open the lower-level modules only when they need protocol details.
 - Latitude/longitude: standard Earth coordinates for position.
 - Ground course: the direction of travel over the ground.
 
-## What each sensor tells you
-
 - Accelerometer: "Which way is down?" and "am I accelerating?"
 - Gyroscope: "How fast am I rotating?"
 - Magnetometer: "Which compass direction am I facing?"
 - Barometer: "About how high am I, based on air pressure?"
 - GPS: "Where am I outdoors, and how fast am I moving over the ground?"
 
-## What the reader returns
-
 - IMU: accelerometer and gyro via `MSP_RAW_IMU`
 - Magnetometer: raw magnetometer axes via `MSP_RAW_IMU`
 - GPS: fix, satellite count, lat/lon, altitude, speed, course via `MSP_RAW_GPS`
 - Barometer-derived data: estimated altitude and variometer via `MSP_ALTITUDE`
-
-## Current limitation
-
-Betaflight's common MSP messages do not expose raw DPS310 pressure and
-temperature. This project reports the flight controller's estimated altitude
-and variometer instead.
-
-In plain English: the script can tell you Betaflight's idea of altitude, but
-not the raw pressure number directly from the DPS310 sensor.
 
 ## Install
 
@@ -113,7 +90,7 @@ Read one sample:
 python3 sensor_reader.py --port /dev/tty.usbmodem12301
 ```
 
-Stream continuously at 5 Hz:
+Stream continuously:
 
 ```bash
 python3 sensor_reader.py --port /dev/tty.usbmodem12301 --count 0 --rate 5
@@ -132,16 +109,7 @@ python3 sensor_reader.py --port /dev/tty.usbmodem12301 --count 0 --rate 5 --json
 - Make sure GPS and magnetometer support are enabled in Betaflight so the FC is
   populating those fields.
 
-## Reading the output
-
-When you run the script, think of the output like this:
-
-- `imu`: motion-related measurements from the flight controller
-- `barometer`: altitude estimate and climb/descent speed
-- `gps`: outdoor position and travel information
-- `timestamp`: when this group of values was collected
-
-If a value looks strange, the first questions to ask are:
+## Troubleshooting
 
 1. Is the correct serial port selected?
 2. Is MSP enabled on that port in Betaflight?
