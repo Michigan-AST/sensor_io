@@ -1,7 +1,6 @@
-# sensor_io
+# M-AST sensor_io
 
-Read Betaflight sensor data over MSP from a flight controller such as a
-Lumenier Lux H7.
+Read Betaflight sensor data over Multiwii Serial Protocol (MSP).
 
 ## Code Structure
 
