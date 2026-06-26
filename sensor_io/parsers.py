@@ -75,7 +75,7 @@ def parse_gps_payload(payload: bytes) -> GpsSample:
     """
 
     # GPS payload size is fixed for this legacy MSP message.
-    expected_size = 18
+    expected_size = 16
     if len(payload) != expected_size:
         raise MspError(f"Unexpected MSP_RAW_GPS payload length: {len(payload)}")
 
@@ -83,10 +83,9 @@ def parse_gps_payload(payload: bytes) -> GpsSample:
     # B  = unsigned 8-bit integer
     # i  = signed 32-bit integer
     # h  = signed 16-bit integer
-    fix, satellites, latitude_raw, longitude_raw, altitude_m, speed_cms, course_tenths, *_ = (
-        struct.unpack("<BBiihhh", payload[:-2])  # idk...
+    fix, satellites, latitude_raw, longitude_raw, altitude_m, speed_cms, course_tenths = (
+        struct.unpack("<BBiihhh", payload)
     )
-    print("FFEFIF+EFNEFIEFI", _)
     # Latitude and longitude are scaled integers rather than floats on the wire
     # because binary protocols often avoid floating-point values for simplicity.
     return GpsSample(
